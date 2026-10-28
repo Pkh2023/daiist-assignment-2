@@ -14,21 +14,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+# Scenario: Dutch packhouse, 3 kg retail bags of table potatoes, camera after destoning/washing.
+LABOUR_EUR_PER_H = 47.90  # Eurostat 2025, Netherlands, whole economy, employers with 10+ staff
+BAG_CREDIT = 3.85         # Albert Heijn regular price, 3 kg vastkokende aardappelen
 COSTS = {
-    "fn_defect": 1.50,   # EUR: rotten potato reaches a 2.5 kg retail bag -> refund/claim on the bag
-    "fn_stone": 25.0,    # EUR: stone reaches a bag or the washer/peeler -> complaint or equipment damage
-    "fp": 0.08,          # EUR: good potato diverted to the feed/starch stream (lost margin on ~200 g)
-    "tp": 0.0,           # a rejected bad item was never sellable; ejection itself is ~free
+    "fn_defect": 0.20 * BAG_CREDIT,                            # 20% chance a missed defect triggers a bag credit = 0.77
+    "fn_stone": 0.50 * (BAG_CREDIT + 0.75 * LABOUR_EUR_PER_H),  # 50% chance of a claim: credit + 45 min admin = 19.8875
+    "fp": 0.200 * (0.34 - 0.04),   # 200 g x (EUR 0.34/kg LNCN wk 37 2026 midpoint - EUR 0.04/kg salvage) = 0.06
+    "tp": 0.0,                     # a rejected bad item was never saleable
     "tn": 0.0,
-    "review": 0.025,     # EUR per item a person inspects: 3 s at ~EUR 30/h loaded labour
+    "review": LABOUR_EUR_PER_H * 3.0 / (3600 * 0.80),  # 3 s per check, paid idle time allocated = 0.0499
 }
-HUMAN = {"miss": 0.10, "false_reject": 0.02}   # error rates of a person on the review belt
-BASE_RATES = {"defect": 0.01, "stone": 0.002}  # share of objects on the belt (see REPORT.md)
-LINE = {"objects_per_hour": 50_000,             # ~10 t/h at ~200 g per potato
-        "hours_per_day": 16,                    # two shifts
+HUMAN = {"miss": 0.15, "false_reject": 0.03}     # assumed reviewer error rates in a 3 s check
+BASE_RATES = {"defect": 0.015, "stone": 0.0005}  # 1.5% defective; 1 stone per 2,000 after destoning
+LINE = {"objects_per_hour": 30_000,               # ~6 t/h camera lane at ~200 g per potato
+        "hours_per_day": 8,                       # one shift
         "seconds_per_review": 3.0,
-        "utilisation": 0.75,                    # a reviewer is not productive every second
-        "reviewers": 2}                         # the people already at today's picking table
+        "utilisation": 0.80,
+        "reviewers": 1}                           # at most one person on the review station
 
 # fine steps at the bottom, where the scores of defective potatoes actually sit
 THRESHOLDS = np.unique(np.round(np.concatenate([[0.001, 0.002, 0.003, 0.005, 0.0075],
@@ -126,9 +129,10 @@ def sensitivity(units) -> list:
     for key, label in [("fn_defect", "missed defect"), ("fn_stone", "missed stone"), ("fp", "good potato thrown out")]:
         for f in (0.25, 4.0):
             cases.append((f"{label} cost x{f:g}", {key: COSTS[key] * f}, {}))
-    for grp, vals in [("defect", (0.003, 0.03)), ("stone", (0.0005, 0.01))]:
-        for v in vals:
-            cases.append((f"{grp} base rate {100 * v:g}%", {}, {grp: v}))
+    for grp in ["defect", "stone"]:
+        for f in (0.25, 4.0):
+            v = BASE_RATES[grp] * f
+            cases.append((f"{grp} base rate x{f:g} ({100 * v:.3g}%)", {}, {grp: v}))
     rows = []
     for label, dc, db in cases:
         costs = dict(COSTS, **dc); base = dict(BASE_RATES, **db)

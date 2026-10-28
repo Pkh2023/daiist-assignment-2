@@ -168,35 +168,35 @@
   },
   "phantom_units": 109,
   "costs": {
-    "fn_defect": 1.5,
-    "fn_stone": 25.0,
-    "fp": 0.08,
+    "fn_defect": 0.77,
+    "fn_stone": 19.8875,
+    "fp": 0.06000000000000001,
     "tp": 0.0,
     "tn": 0.0,
-    "review": 0.025
+    "review": 0.04989583333333333
   },
   "human": {
-    "miss": 0.1,
-    "false_reject": 0.02
+    "miss": 0.15,
+    "false_reject": 0.03
   },
   "base_rates": {
-    "defect": 0.01,
-    "stone": 0.002
+    "defect": 0.015,
+    "stone": 0.0005
   },
   "line": {
-    "objects_per_hour": 50000,
-    "hours_per_day": 16,
+    "objects_per_hour": 30000,
+    "hours_per_day": 8,
     "seconds_per_review": 3.0,
-    "utilisation": 0.75,
-    "reviewers": 2
+    "utilisation": 0.8,
+    "reviewers": 1
   },
   "operating_point": {
     "threshold": 0.03,
-    "cost_per_1000": 7.3022755072751755,
-    "t_low": 0.02,
-    "t_high": 0.06,
-    "band_cost_per_1000": 6.606593998807709,
-    "review_share": 0.03361038616943764,
+    "cost_per_1000": 4.638457392197126,
+    "t_low": 0.03,
+    "t_high": 0.03,
+    "band_cost_per_1000": 4.638457392197126,
+    "review_share": 0.0,
     "recall_defect_test": 0.8064516129032258,
     "recall_defect_ci95": [
       0.6371939644454013,
@@ -212,155 +212,155 @@
     "false_rejects_per_good_test": 0.035249828884325804
   },
   "band_detail": {
-    "t_low": 0.02,
-    "t_high": 0.06,
-    "cost_per_1000": 6.606593998807709,
-    "review_share": 0.03361038616943764,
-    "recall_defect": 0.8290322580645162,
+    "t_low": 0.03,
+    "t_high": 0.03,
+    "cost_per_1000": 4.638457392197126,
+    "review_share": 0.0,
+    "recall_defect": 0.8064516129032258,
     "recall_stone": 0.967741935483871,
-    "false_reject_rate": 0.020102669404517454,
-    "cost_fn_defect": 2.564516129032257,
-    "cost_fn_stone": 1.6129032258064502,
-    "cost_fp": 1.5889149897330597,
-    "cost_review": 0.8402596542359411
+    "false_reject_rate": 0.035249828884325804,
+    "cost_fn_defect": 2.2354838709677427,
+    "cost_fn_stone": 0.32076612903225776,
+    "cost_fp": 2.0822073921971254,
+    "cost_review": 0.0
   },
   "band_unconstrained": {
-    "t_low": 0.0075,
-    "t_high": 0.21,
-    "cost_per_1000": 5.1608944823474845,
-    "review_share": 0.10181466516526462,
-    "recall_defect": 0.8967741935483872,
-    "recall_stone": 0.9870967741935485,
-    "false_reject_rate": 0.0053388090349075976,
-    "cost_fn_defect": 1.548387096774193,
-    "cost_fn_stone": 0.6451612903225792,
-    "cost_fp": 0.42197946611909654,
-    "cost_review": 2.5453666291316157
+    "t_low": 0.03,
+    "t_high": 0.03,
+    "cost_per_1000": 4.638457392197126,
+    "review_share": 0.0,
+    "recall_defect": 0.8064516129032258,
+    "recall_stone": 0.967741935483871,
+    "false_reject_rate": 0.035249828884325804,
+    "cost_fn_defect": 2.2354838709677427,
+    "cost_fn_stone": 0.32076612903225776,
+    "cost_fp": 2.0822073921971254,
+    "cost_review": 0.0
   },
   "staffing_unconstrained": {
-    "reviews_per_hour": 5090.733258263231,
-    "reviews_per_day": 81451.73213221169,
-    "review_hours_per_day": 67.87644344350974,
-    "people_on_line_at_once": 5.656370286959145
+    "reviews_per_hour": 0.0,
+    "reviews_per_day": 0.0,
+    "review_hours_per_day": 0.0,
+    "people_on_line_at_once": 0.0
   },
-  "max_review_share": 0.036,
+  "max_review_share": 0.032,
   "alternatives": {
-    "do_nothing": 65.0,
-    "person_checks_everything": 33.0808,
+    "do_nothing": 21.49375,
+    "person_checks_everything": 54.891995833333326,
     "person_checks_everything_staff": {
-      "reviews_per_hour": 50000.0,
-      "reviews_per_day": 800000.0,
-      "review_hours_per_day": 666.6666666666666,
-      "people_on_line_at_once": 55.55555555555556
+      "reviews_per_hour": 30000.0,
+      "reviews_per_day": 240000.0,
+      "review_hours_per_day": 200.0,
+      "people_on_line_at_once": 31.25
     },
-    "model_alone": 7.3022755072751755,
-    "model_plus_review": 6.606593998807709
+    "model_alone": 4.638457392197126,
+    "model_plus_review": 4.638457392197126
   },
   "staffing": {
-    "reviews_per_hour": 1680.519308471882,
-    "reviews_per_day": 26888.30893555011,
-    "review_hours_per_day": 22.406924112958425,
-    "people_on_line_at_once": 1.8672436760798687
+    "reviews_per_hour": 0.0,
+    "reviews_per_day": 0.0,
+    "review_hours_per_day": 0.0,
+    "people_on_line_at_once": 0.0
   },
   "sensitivity": [
     {
       "case": "as assumed",
       "best_threshold": 0.03,
-      "model_alone_cost": 7.3022755072751755,
-      "t_low": 0.02,
-      "t_high": 0.06,
-      "band_cost": 6.606593998807709,
-      "review_share": 0.03361038616943764
+      "model_alone_cost": 4.638457392197126,
+      "t_low": 0.03,
+      "t_high": 0.03,
+      "band_cost": 4.638457392197126,
+      "review_share": 0.0
     },
     {
       "case": "missed defect cost x0.25",
       "best_threshold": 0.21,
-      "model_alone_cost": 4.665660948091231,
-      "t_low": 0.03,
-      "t_high": 0.17,
-      "band_cost": 3.842571393875162,
-      "review_share": 0.03591508246671524
+      "model_alone_cost": 2.665260896204544,
+      "t_low": 0.21,
+      "t_high": 0.21,
+      "band_cost": 2.665260896204544,
+      "review_share": 0.0
     },
     {
       "case": "missed defect cost x4",
       "best_threshold": 0.0075,
-      "model_alone_cost": 10.317608354860786,
+      "model_alone_cost": 7.459770291007043,
       "t_low": 0.0075,
-      "t_high": 0.01,
-      "band_cost": 9.779064838488885,
-      "review_share": 0.015221567198781214
+      "t_high": 0.0075,
+      "band_cost": 7.459770291007043,
+      "review_share": 0.0
     },
     {
       "case": "missed stone cost x0.25",
       "best_threshold": 0.03,
-      "model_alone_cost": 6.092598087920339,
-      "t_low": 0.02,
-      "t_high": 0.06,
-      "band_cost": 5.396916579452871,
-      "review_share": 0.03361038616943764
+      "model_alone_cost": 4.397882795422933,
+      "t_low": 0.03,
+      "t_high": 0.03,
+      "band_cost": 4.397882795422933,
+      "review_share": 0.0
     },
     {
       "case": "missed stone cost x4",
-      "best_threshold": 0.0075,
-      "model_alone_cost": 10.478898677441432,
-      "t_low": 0.0075,
-      "t_high": 0.01,
-      "band_cost": 9.95648419332759,
-      "review_share": 0.015221567198781214
+      "best_threshold": 0.03,
+      "model_alone_cost": 5.600755779293899,
+      "t_low": 0.03,
+      "t_high": 0.03,
+      "band_cost": 5.600755779293899,
+      "review_share": 0.0
     },
     {
       "case": "good potato thrown out cost x0.25",
       "best_threshold": 0.0075,
-      "model_alone_cost": 2.982627895166809,
+      "model_alone_cost": 1.9451341050098254,
       "t_low": 0.0075,
       "t_high": 0.0075,
-      "band_cost": 2.982627895166809,
+      "band_cost": 1.9451341050098254,
       "review_share": 0.0
     },
     {
       "case": "good potato thrown out cost x4",
       "best_threshold": 0.21,
-      "model_alone_cost": 13.823934114945573,
+      "model_alone_cost": 9.698745197721403,
       "t_low": 0.03,
-      "t_high": 0.17,
-      "band_cost": 7.837944713077654,
-      "review_share": 0.03591508246671524
+      "t_high": 0.09,
+      "band_cost": 7.814981962843978,
+      "review_share": 0.029685213397805305
     },
     {
-      "case": "defect base rate 0.3%",
-      "best_threshold": 0.12,
-      "model_alone_cost": 5.169927800225209,
-      "t_low": 0.03,
-      "t_high": 0.24,
-      "band_cost": 3.865888830010376,
-      "review_share": 0.03452864807577665
+      "case": "defect base rate x0.25 (0.375%)",
+      "best_threshold": 0.21,
+      "model_alone_cost": 2.667570957806186,
+      "t_low": 0.21,
+      "t_high": 0.21,
+      "band_cost": 2.667570957806186,
+      "review_share": 0.0
     },
     {
-      "case": "defect base rate 3%",
+      "case": "defect base rate x4 (6%)",
       "best_threshold": 0.0075,
-      "model_alone_cost": 9.674942041465192,
-      "t_low": 0.01,
-      "t_high": 0.02,
-      "band_cost": 9.08667909297653,
-      "review_share": 0.03574754366209622
-    },
-    {
-      "case": "stone base rate 0.05%",
-      "best_threshold": 0.03,
-      "model_alone_cost": 6.096828067386458,
-      "t_low": 0.02,
-      "t_high": 0.06,
-      "band_cost": 5.40044542955554,
-      "review_share": 0.03365504736040273
-    },
-    {
-      "case": "stone base rate 1%",
-      "best_threshold": 0.0075,
-      "model_alone_cost": 10.953014947782117,
+      "model_alone_cost": 7.191803145216489,
       "t_low": 0.0075,
-      "t_high": 0.01,
-      "band_cost": 10.492947296372344,
-      "review_share": 0.015187123269523747
+      "t_high": 0.0075,
+      "band_cost": 7.191803145216489,
+      "review_share": 0.0
+    },
+    {
+      "case": "stone base rate x0.25 (0.0125%)",
+      "best_threshold": 0.03,
+      "model_alone_cost": 4.398675916572829,
+      "t_low": 0.03,
+      "t_high": 0.03,
+      "band_cost": 4.398675916572829,
+      "review_share": 0.0
+    },
+    {
+      "case": "stone base rate x4 (0.2%)",
+      "best_threshold": 0.03,
+      "model_alone_cost": 5.59758329469431,
+      "t_low": 0.03,
+      "t_high": 0.03,
+      "band_cost": 5.59758329469431,
+      "review_share": 0.0
     }
   ]
 }
