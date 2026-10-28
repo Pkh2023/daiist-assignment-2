@@ -42,7 +42,7 @@ def sort_image(image, t_low, t_high):
         return None, pd.DataFrame()
     t_low, t_high = min(t_low, t_high), max(t_low, t_high)
     r = MODEL.predict(image, imgsz=640, conf=0.01, device="cpu", verbose=False, max_det=300)[0]
-    cls = r.boxes.cls.numpy().astype(int); conf = r.boxes.conf.numpy(); xyxy = r.boxes.xyxy.numpy()
+    cls = r.boxes.cls.cpu().numpy().astype(int); conf = r.boxes.conf.cpu().numpy(); xyxy = r.boxes.xyxy.cpu().numpy()
     name = np.array([NAMES[c] for c in cls])
 
     objs = [[xyxy[i], 0.0, "potato"] for i in np.where((name == "potato") & (conf >= POTATO_CONF))[0]]
@@ -209,6 +209,9 @@ with gr.Blocks(title="Potato sorter") as demo:
         for box in [c_def, c_stone, c_fp, c_rev, pi_def, pi_stone]:
             box.change(operating_view, inputs, outputs)
         demo.load(operating_view, inputs, outputs)
+        if METRICS.get("sensitivity"):
+            gr.Dataframe(pd.DataFrame(METRICS["sensitivity"]).round(3),
+                         label="sensitivity: best thresholds when one assumption moves (from train.py)")
 
     with gr.Tab("Per-class results"):
         gr.Markdown("Test split. For the sorting decision the positive classes are **bad** (a blemish "
@@ -216,8 +219,8 @@ with gr.Blocks(title="Potato sorter") as demo:
         gr.Dataframe(per_class_table(), label="precision / recall / AP per class")
         gr.Dataframe(detection_confusion(),
                      label="box-level confusion matrix, finetuned model (Ultralytics, conf 0.25, IoU 0.45)")
-        if (ART / "cost_vs_threshold.png").exists():
-            gr.Image(str(ART / "cost_vs_threshold.png"), label="cost sweep saved by train.py")
+        if (ART / "confusion_matrix_normalized.png").exists():
+            gr.Image(str(ART / "confusion_matrix_normalized.png"), label="normalised confusion matrix")
         gr.Dataframe(dataset_table(), label="dataset composition")
 
 if __name__ == "__main__":

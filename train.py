@@ -157,6 +157,10 @@ def train_model(data_yaml: Path) -> Path:
     best = run_dir / "weights" / "best.pt"
     results_csv = run_dir / "results.csv"
     done = results_csv.exists() and len(pd.read_csv(results_csv)) >= TRAIN_CFG["epochs"]
+    if not done and last.exists():
+        # Ultralytics strips the optimizer from last.pt when a run ends (incl. early stopping)
+        import torch
+        done = torch.load(last, map_location="cpu", weights_only=False).get("optimizer") is None
 
     if done and best.exists():
         print(f"Training run already complete: {best}")
@@ -244,7 +248,7 @@ def predict_split(weights: str, split: str) -> dict:
                            device=DEVICE, stream=True, verbose=False, max_det=300):
         b = r.boxes
         out[Path(r.path).stem] = np.concatenate(
-            [b.cls.numpy()[:, None], b.xyxyn.numpy(), b.conf.numpy()[:, None]], axis=1)
+            [b.cls.cpu().numpy()[:, None], b.xyxyn.cpu().numpy(), b.conf.cpu().numpy()[:, None]], axis=1)
     return out
 
 
