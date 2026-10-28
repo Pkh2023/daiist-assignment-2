@@ -15,23 +15,33 @@ import numpy as np
 import pandas as pd
 
 # Scenario: Dutch packhouse, 3 kg retail bags of table potatoes, camera after destoning/washing.
+# Sources for every figure are in REPORT.md ("What each mistake costs").
 LABOUR_EUR_PER_H = 47.90  # Eurostat 2025, Netherlands, whole economy, employers with 10+ staff
-BAG_CREDIT = 3.85         # Albert Heijn regular price, 3 kg vastkokende aardappelen
+BAG_CREDIT = 3.85         # Albert Heijn regular price, 3 kg vastkokende aardappelen (refund to the shopper)
+GBP_EUR = 1.1665          # HMRC monthly rate, October 2026
+COMPLAINT_CHARGE = 22.50 * GBP_EUR  # mid-point of the GBP 0-45 retailers charge suppliers per complaint (GCA, 2015)
+SAFETY_CHARGE = 45.00 * GBP_EUR     # top of that range: all retailers charge for product-safety failings
+P_COMPLAIN = 0.05         # about 1 in 20 dissatisfied consumers complains (TARP 1986, via Chebat & Davidow 2005)
 COSTS = {
-    "fn_defect": 0.20 * BAG_CREDIT,                            # 20% chance a missed defect triggers a bag credit = 0.77
-    "fn_stone": 0.50 * (BAG_CREDIT + 0.75 * LABOUR_EUR_PER_H),  # 50% chance of a claim: credit + 45 min admin = 19.8875
+    # a missed defect reaches a bag; 1 in 20 such bags comes back as a complaint: refund + retailer charge
+    "fn_defect": P_COMPLAIN * (BAG_CREDIT + COMPLAINT_CHARGE),                           # = 1.505
+    # a missed stone: same complaint rate, safety-level charge, plus 45 min of QA investigation
+    "fn_stone": P_COMPLAIN * (BAG_CREDIT + SAFETY_CHARGE + 0.75 * LABOUR_EUR_PER_H),     # = 4.614
     "fp": 0.200 * (0.34 - 0.04),   # 200 g x (EUR 0.34/kg LNCN wk 37 2026 midpoint - EUR 0.04/kg salvage) = 0.06
     "tp": 0.0,                     # a rejected bad item was never saleable
     "tn": 0.0,
     "review": LABOUR_EUR_PER_H * 3.0 / (3600 * 0.80),  # 3 s per check, paid idle time allocated = 0.0499
 }
-HUMAN = {"miss": 0.15, "false_reject": 0.03}     # assumed reviewer error rates in a 3 s check
-BASE_RATES = {"defect": 0.015, "stone": 0.0005}  # 1.5% defective; 1 stone per 2,000 after destoning
+# A person inspecting potatoes: catches 85% of defects (See 2015, 82 inspectors) and bins 10% of
+# good ones (low end of the 10-20% SiftAI/KPM report for human potato inspectors).
+HUMAN = {"miss": 0.15, "false_reject": 0.10}
+BASE_RATES = {"defect": 0.010, "stone": 0.0005}  # 1.0% defective (test belt: 31/2,953); 1 stone per 2,000
 LINE = {"objects_per_hour": 30_000,               # ~6 t/h camera lane at ~200 g per potato
         "hours_per_day": 8,                       # one shift
         "seconds_per_review": 3.0,
         "utilisation": 0.80,
-        "reviewers": 1}                           # at most one person on the review station
+        "reviewers": 1,                           # at most one person on the review station
+        "pickers": 4}                             # today's manual picking table (R S Cockerill: 4-8 per line)
 
 # fine steps at the bottom, where the scores of defective potatoes actually sit
 THRESHOLDS = np.unique(np.round(np.concatenate([[0.001, 0.002, 0.003, 0.005, 0.0075],
@@ -117,10 +127,32 @@ def alternatives(units, threshold, band, **kw) -> dict:
     everyone = 1000 * (base["defect"] * human["miss"] * costs["fn_defect"]
                        + base["stone"] * human["miss"] * costs["fn_stone"]
                        + pi_g * human["false_reject"] * costs["fp"] + costs["review"])
-    return {"do_nothing": nothing, "person_checks_everything": everyone,
-            "person_checks_everything_staff": staffing(1.0),
+    picking = manual_picking(costs=costs, base=base, human=human)
+    return {"do_nothing": nothing,
+            # "a person checks everything" as it is done today: pickers scanning the whole belt
+            "person_checks_everything": picking["cost_per_1000"],
+            "person_checks_everything_detail": picking,
+            # the same done object by object at 3 s each, for scale: needs ~31 people at once
+            "person_checks_each_object_3s": everyone,
+            "person_checks_each_object_3s_staff": staffing(1.0),
             "model_alone": expected_cost(units, threshold, threshold, **kw)["cost_per_1000"],
             "model_plus_review": band["cost_per_1000"]}
+
+
+def manual_picking(costs=COSTS, base=BASE_RATES, human=HUMAN, line=LINE) -> dict:
+    """Today's practice: a picking table where people pull defects and stones off the belt.
+    Same human error rates as a reviewer; labour is the pickers' paid hours spread over
+    every object, since they watch the whole belt."""
+    pi_g = 1 - base["defect"] - base["stone"]
+    errors = (base["defect"] * human["miss"] * costs["fn_defect"]
+              + base["stone"] * human["miss"] * costs["fn_stone"]
+              + pi_g * human["false_reject"] * costs["fp"])
+    labour = line["pickers"] * LABOUR_EUR_PER_H / line["objects_per_hour"]
+    return {"cost_per_1000": 1000 * (errors + labour), "errors_per_1000": 1000 * errors,
+            "labour_per_1000": 1000 * labour,
+            "cost_fn_defect": 1000 * base["defect"] * human["miss"] * costs["fn_defect"],
+            "cost_fn_stone": 1000 * base["stone"] * human["miss"] * costs["fn_stone"],
+            "cost_fp": 1000 * pi_g * human["false_reject"] * costs["fp"]}
 
 
 def sensitivity(units) -> list:

@@ -14,8 +14,11 @@ with (ROOT / 'threshold_counts.csv').open() as f:
     COUNTS = [{k: float(v) if k == 'threshold' else int(v)
                for k, v in row.items()} for row in csv.DictReader(f)]
 
-BASE = dict(cd=.77, cs=19.8875, fp=.06, cr=47.9*3/(3600*.8),
-            pd=.015, ps=.0005, hm=.15, hf=.03, n=30000., hours=8.,
+# Same inputs as costing.py (sources in REPORT.md). The first-pass scenario used
+# cd=.77, cs=19.8875, pd=.015, hf=.03; those results are recorded in REPORT.md's history.
+BASE = dict(cd=.05*(3.85+22.5*1.1665), cs=.05*(3.85+45*1.1665+.75*47.9), fp=.06,
+            cr=47.9*3/(3600*.8),
+            pd=.010, ps=.0005, hm=.15, hf=.10, n=30000., hours=8.,
             seconds=3., utilisation=.8, reviewers=1, ctp=0., ctn=0.)
 PAIRS = [(i,j) for i in range(len(COUNTS)) for j in range(i,len(COUNTS))]
 

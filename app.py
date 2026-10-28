@@ -124,7 +124,7 @@ def operating_view(t_low, t_high, c_def, c_stone, c_fp, c_rev, pi_def, pi_stone)
 
     comp = pd.DataFrame([
         ["Do nothing (no sorting)", alts["do_nothing"]],
-        ["Person checks every object", alts["person_checks_everything"]],
+        [f"Manual picking table ({costing.LINE['pickers']} people, today's practice)", alts["person_checks_everything"]],
         [f"Model alone at t = {OP['threshold']:.3f}", alts["model_alone"]],
         [f"This band ({t_low:.3f} to {t_high:.3f})", res["cost_per_1000"]],
     ], columns=["policy", "EUR per 1,000 objects"]).round(2)

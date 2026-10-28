@@ -86,7 +86,7 @@ def main() -> None:
           f"{free['review_share']:.2%} reviewed, "
           f"{costing.staffing(free['review_share'])['people_on_line_at_once']:.2f} people")
     print("\npolicy                      EUR/1,000    EUR/day")
-    for name, key in [("do nothing", "do_nothing"), ("person checks everything", "person_checks_everything"),
+    for name, key in [("do nothing", "do_nothing"), ("manual picking table", "person_checks_everything"),
                       ("model alone", "model_alone"), ("model + review band", "model_plus_review")]:
         print(f"  {name:26s} {alts[key]:9.2f} {alts[key] * per_day:10,.0f}")
 
