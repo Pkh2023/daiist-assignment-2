@@ -319,7 +319,5 @@ well (missed-defect cost €2.90 → €2.56).
 
 ## Generative AI use disclosure
 
-I used Claude (Anthropic) throughout this assignment. It wrote the code
-(`train.py`, `costing.py`, `app.py`, the Colab notebook), found and downloaded
-the dataset, ran the training on Colab and the evaluation, and drafted this
-report, including the cost figures, base rates and threshold analysis.
+I used Claude throughout this assignment. It helped with writing the code
+and formatting of the report.
