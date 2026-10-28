@@ -27,9 +27,12 @@ BASE_RATES = {"defect": 0.01, "stone": 0.002}  # share of objects on the belt (s
 LINE = {"objects_per_hour": 50_000,             # ~10 t/h at ~200 g per potato
         "hours_per_day": 16,                    # two shifts
         "seconds_per_review": 3.0,
-        "utilisation": 0.75}                    # a reviewer is not productive every second
+        "utilisation": 0.75,                    # a reviewer is not productive every second
+        "reviewers": 2}                         # the people already at today's picking table
 
-THRESHOLDS = np.round(np.arange(0.01, 1.00, 0.01), 2)
+# fine steps at the bottom, where the scores of defective potatoes actually sit
+THRESHOLDS = np.unique(np.round(np.concatenate([[0.001, 0.002, 0.003, 0.005, 0.0075],
+                                                 np.arange(0.01, 1.00, 0.01)]), 4))
 
 
 def _rates(units: pd.DataFrame, t_low, t_high):
@@ -131,12 +134,18 @@ def sensitivity(units) -> list:
         costs = dict(COSTS, **dc); base = dict(BASE_RATES, **db)
         sw = sweep_single(units, costs=costs, base=base)
         b = sw.loc[sw.cost_per_1000.idxmin()]
-        band = best_band(units, costs=costs, base=base)
+        band = best_band(units, max_review_share=max_review_share(), costs=costs, base=base)
         rows.append({"case": label, "best_threshold": float(b.threshold),
                      "model_alone_cost": float(b.cost_per_1000),
                      "t_low": band["t_low"], "t_high": band["t_high"],
                      "band_cost": float(band["cost_per_1000"]), "review_share": float(band["review_share"])})
     return rows
+
+
+def max_review_share(line=LINE) -> float:
+    """Largest share of objects the available reviewers can inspect."""
+    per_hour = line["reviewers"] * 3600 * line["utilisation"] / line["seconds_per_review"]
+    return per_hour / line["objects_per_hour"]
 
 
 def staffing(review_share: float, line=LINE) -> dict:
@@ -175,7 +184,8 @@ def plot_sweep(sweep: pd.DataFrame, chosen: float, path: Path):
     ax.scatter([chosen], [c], color="k", zorder=5)
     ax.annotate(f"t = {chosen:.2f}\nEUR {c:.2f} / 1,000", (chosen, c), xytext=(10, 25),
                 textcoords="offset points")
-    ax.set_xlabel("reject threshold (model confidence)")
+    ax.set_xscale("log")
+    ax.set_xlabel("reject threshold (model confidence, log scale)")
     ax.set_ylabel("expected EUR per 1,000 objects")
     ax.set_title("Cost against threshold, model deciding alone")
     ax.legend(frameon=False, fontsize=8)

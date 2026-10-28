@@ -57,6 +57,7 @@ TRAIN_CFG = dict(
 )
 RUN_NAME = "potato-yolo11s"
 PRED_CONF = 0.001         # keep low-confidence boxes so the threshold sweep can see them
+CM_CONF = 0.25            # confidence for the box-level confusion matrix
 
 
 # 1. data ---------------------------------------------------------------------------
@@ -189,14 +190,21 @@ def detection_metrics(weights: Path, data_yaml: Path, names: list) -> dict:
                                name="finetuned-test", exist_ok=True, verbose=False)
     per_class = {}
     for i, k in enumerate(m.box.ap_class_index):
+        # P and R are Ultralytics' values at the confidence that maximises mean F1
         p, r, ap50, ap = m.box.class_result(i)
         per_class[names[int(k)]] = {"precision": float(p), "recall": float(r),
                                     "ap50": float(ap50), "ap50_95": float(ap)}
-    # Ultralytics confusion matrix: rows = predicted, columns = true, last = background.
+    # AP needs every box down to conf 0.001, but Ultralytics also builds the confusion matrix at the
+    # validation conf, which would count thousands of near-zero boxes. A second pass at 0.25 gives a
+    # matrix that shows what the model actually says. Rows = predicted, columns = true.
+    cm = YOLO(str(weights)).val(data=str(data_yaml), split="test", imgsz=TRAIN_CFG["imgsz"], batch=8,
+                                device=DEVICE, conf=CM_CONF, plots=True, project=str(RUNS_DIR / "eval"),
+                                name="finetuned-test-cm", exist_ok=True, verbose=False)
     return {"map50": float(m.box.map50), "map50_95": float(m.box.map),
             "precision": float(m.box.mp), "recall": float(m.box.mr),
             "per_class": per_class,
-            "confusion_matrix": m.confusion_matrix.matrix.astype(int).tolist(),
+            "confusion_conf": CM_CONF,
+            "confusion_matrix": cm.confusion_matrix.matrix.astype(int).tolist(),
             "confusion_labels": list(names) + ["background"]}
 
 
@@ -399,7 +407,9 @@ def main() -> None:
     print("Sweeping thresholds against the cost model")
     sweep = costing.sweep_single(units)
     sweep.to_csv(ART_DIR / "cost_sweep.csv", index=False)
-    band = costing.best_band(units)
+    # Shipped band: cheapest one the available reviewers can actually keep up with.
+    band = costing.best_band(units, max_review_share=costing.max_review_share())
+    band_free = costing.best_band(units)
     op = operating_point(units, sweep, band)
     real = units[~units.phantom]
     metrics = {
@@ -412,6 +422,9 @@ def main() -> None:
         "line": costing.LINE,
         "operating_point": op,
         "band_detail": band,
+        "band_unconstrained": band_free,
+        "staffing_unconstrained": costing.staffing(band_free["review_share"]),
+        "max_review_share": costing.max_review_share(),
         "alternatives": costing.alternatives(units, op["threshold"], band),
         "staffing": costing.staffing(op["review_share"]),
         "sensitivity": costing.sensitivity(units),
@@ -419,7 +432,7 @@ def main() -> None:
     (ART_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2))
     costing.plot_sweep(sweep, op["threshold"], ART_DIR / "cost_vs_threshold.png")
     for f in ["confusion_matrix.png", "confusion_matrix_normalized.png"]:
-        src = RUNS_DIR / "eval" / "finetuned-test" / f
+        src = RUNS_DIR / "eval" / "finetuned-test-cm" / f
         if src.exists():
             shutil.copy(src, ART_DIR / f)
     print(json.dumps({k: metrics[k] for k in ["test_units", "operating_point", "alternatives"]}, indent=2))
